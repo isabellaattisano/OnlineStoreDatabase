@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Database Project</title>
+            <link type="text/css" rel="stylesheet" href="styles.css">
+            <!-- <script src="connection.js"></script> -->
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+            <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+            <title>"Database Systems Final Project"</title>
+
+
+        </head>
+
+        <script>
+            function load(){
+                const params = new URLSearchParams(window.location.search)
+
+                var id = params.get('id')
+
+                console.log("iddd" + id)
+
+
+                if(id != null){
+                    $(".dropdown-content").append(`<a href="index.html?id=${id}">Home</a>`);
+                    $(".dropdown-content").append(`<a href="viewcart.html?id=${id}">View Cart</a>`);
+                    $(".dropdown-content").append(`<a href="account.html?id=${id}">View Account</a>`);
+                    $(".dropdown-content").append(`<a href="createaccount.html">Logout</a>`);
+    
+
+                }
+                else{
+                    console.log("else");
+                    $(".dropdown-content").append(`<a href="createaccount.html">Create Account / Login </a>`);
+                    $(".dropdown-content").append(`<a href="index.html">Home</a>`);
+                }
+
+                productload();
+
+            }
+
+            async function productload(){
+
+
+                var order = document.getElementById("orderby").value
+                var type = document.getElementById("filterby").value
+                var pricelimit = document.getElementById("pricelimit").value
+
+                console.log(pricelimit);
+
+
+                const params = new URLSearchParams(window.location.search)
+
+                var id = params.get('id')
+                var len;
+
+                document.getElementById("productlist").innerHTML = '';
+
+                    $.post('http://localhost:3000/getclothing', {order:order, pricelimit:pricelimit, type: type},
+                    async function(res){
+                        len = res.length;
+                        console.log("res" + res[0]);
+                        for(let i = 0; i<res.length; i++)
+                            addproduct(res[i][0], res[i][1], res[i][2], res[i][3]);
+                        
+                        let myPromise = new Promise(function(resolve) {resolve("resolved !!"); });
+                        await myPromise;
+                        getfav();
+                    }
+
+                    );
+
+                        
+                }
+
+            async function addproduct(productid, name, type, price){
+
+                const params = new URLSearchParams(window.location.search)
+
+                var id = params.get('id')
+
+                
+                $("#productlist").append(`<div id = "product"><h3>${name}<button id = "fav${productid}" onclick = "addfavorite(${productid})">&#9825;</button></h3><h4 id = "price${productid}">${price}</h4><h4 style = "text-transform: uppercase;">${type}</h4>`)
+                $("#productlist").append(`<label for="size">Size</label> <select name="sizes" id="size${productid}""> <option value="X-Small">X-Small</option> <option value="small">Small</option><option value="medium">Medium</option><option value="large">Large</option><option value="x-large">X-Large</option></select></br>`)
+                $("#productlist").append(`<label for="quantity">Quantity</label> <select name="quantity" id="quantity${productid}"> <option value="1">1</option> <option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></br>`)
+                $("#productlist").append(`<button id = "addproduct" onclick="addtocart(${productid})"">Add to Cart</button><br></div>`)
+                $("#productlist").append(`<button id = "seereview" onclick = "seereview(${productid})">See Reviews</button>`);
+
+            }
+
+            function addtocart(productid){
+                const params = new URLSearchParams(window.location.search)
+
+                const size = document.getElementById("size"+productid).value
+                const quantity = document.getElementById("quantity"+productid).value
+                const price = document.getElementById("price1").innerHTML
+
+
+                console.log(price)
+
+
+                $.post('http://localhost:3000/addtocart', {accountid: params.get('id'), productid: productid, size:size, quantity:quantity, price:price});
+
+            }
+
+
+           async function getfav(){
+
+
+            const params = new URLSearchParams(window.location.search)
+            var id = params.get("id");
+
+             $.post('http://localhost:3000/getfavorites', {accountid:id},
+                    function(res){
+                        console.log("favs" + res);
+                        for(let i = 0; i<res.length; i++){
+                            document.getElementById("fav"+res[i][0]).innerHTML = "♥";
+
+                        }
+                    }
+                    
+                    );
+           }
+    
+            function addfavorite(productid){
+
+                const params = new URLSearchParams(window.location.search)
+                console.log(productid+document.getElementById("fav"+productid).innerHTML.toString());
+
+                if (document.getElementById("fav"+productid).innerHTML == "♥"){
+                    console.log("hearts");
+                    document.getElementById("fav"+productid).innerHTML = "&#9825;";
+                    $.post('http://localhost:3000/deletefavorite', {accountid: params.get('id'), productid: productid});
+
+                }
+                else{
+                    console.log("else")
+                    document.getElementById("fav"+productid).innerHTML = "&hearts;";
+                    $.post('http://localhost:3000/addfavorite', {accountid: params.get('id'), productid: productid});
+
+                }
+            }
+
+            function seereview(productid){
+
+                console.log(productid)
+
+                document.getElementById("reviewlist").innerHTML = '';
+                $("#reviewlist").append(`<h1 style = "text-decoration: underline;">Reviews</h1>`);
+
+                $.post('http://localhost:3000/getreviews', { productid: productid}, function(res){
+                    console.log("favs" + res);
+                        for(let i = 0; i<res.length; i++){
+                            console.log(res[0][5]);
+                            $("#reviewlist").append(`By User: Age: ${res[i][2]} Height: ${res[i][3]}' ${res[i][4]}<h1> `);
+
+                            for(let j = 0; j<res[i][5]; j++){
+                                $("#reviewlist").append(`★`);
+                            }
+
+                            for(let j = 0; j<5-res[i][5]; j++){
+                                $("#reviewlist").append(`☆`);
+                            }
+
+                            $("#reviewlist").append(`</h1><h5>${res[i][6]}</h5><h5>Recommended: ${res[i][7]}</h5>`);
+
+                        }
+                });
+            }
+
+        </script>
+
+        <body onload="load()">
+            <div id = "nav-bar">
+                <div id = "left"><h2>Database Systems Final Project</h2></div>
+                <div id = "right" style="float:right;">
+                    <button class = "dropdown" style='font-size:40px'>&#9786;</button>
+                    <div class = "dropdown-content">
+                    </div>
+                </div>
+            </div>
+
+            <div id = "sortby">
+                <label for="orderby">Order By</label> 
+                <select name="orderby" id="orderby" onchange="productload()"> 
+                    <option value="orderby">Order By</option>
+                    <option value="high">Price High to Low</option> 
+                    <option value="low">Price Low to High</option>
+                </select>
+
+            </div>
+
+            <div id = "filtertype">
+                <label for="orderby">Type</label> 
+                <select name="orderby" id="filterby" onchange="productload()"> 
+                    <option value="type">Filter Type</option>
+                    <option value="tops">Tops</option> 
+                    <option value="bottoms">Bottoms</option>
+                    <option value="outerwear">Outerwear</option>
+                    <option value="dresses">Dresses</option>
+                    <option value="accessories">Accessories</option>
+
+
+                </select>
+
+                <br><br>
+                <label>Products under $</label> 
+                <input value = "pricelimit" id="pricelimit"></input> 
+                <button id = "sub" onclick="productload()()">Filter</button>
+
+
+            </div>
+
+            <div id = "lists">
+                <div id = "productlist">
+                
+                </div>
+    
+                <div id = "reviewlist">
+
+                </div>
+            </div>
+            
+
+            </body>
+
+

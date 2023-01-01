@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Database Project</title>
+            <link type="text/css" rel="stylesheet" href="styles.css">
+            <!-- <script src="connection.js"></script> -->
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+            <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+            <title>"Database Systems Final Project"</title>
+
+
+        </head>
+
+        <script>
+            function load(){
+                const params = new URLSearchParams(window.location.search)
+
+                var id = params.get('id')
+
+                if(id != null){
+                    $(".dropdown-content").append(`<a href="index.html?id=${id}">Home</a>`);
+                    $(".dropdown-content").append(`<a href="viewcart.html?id=${id}">View Cart</a>`);
+                    $(".dropdown-content").append(`<a href="account.html?id=${id}">Account</a>`);
+                    $(".dropdown-content").append(`<a href="createaccount.html">Logout</a>`);
+
+                }
+
+                $.post('http://localhost:3000/vieworderhistory', {accountid:id},
+                function(res){
+                        console.log("res" + res[0]);
+                        for(let i = 0; i<res.length; i++){
+                            addinvoice(res[i][0], res[i][1]);
+                            getproducts(res[i][0]);
+                        }
+                        
+                    }
+                );
+            
+
+            }
+
+            function addinvoice(id, totalprice){
+                $("#invoicelist").append(`<div id = "order${id}"><h3 style = "text-decoration: underline;">Order Number #${id}:</h3< <br><h4>Amount $${totalprice}</h4><br><h4>Items in Order: </h4><br></div>`);
+                //  $("#invoicelist").append(`<h4>${name} (${size})</h4> <h6>Quantity: ${quantity}</h6> <h6>Total Price: $${totalprice}</h6>`)                
+        
+
+            }
+
+            function addinvoiceproducts(id, name, size, quantity, totalprice, productid){
+                 $("#order"+id).append(`<h5>${name} (${size})</h5> <h6>Quantity: ${quantity}</h6> <h6>Total Price: $${totalprice}</h6>`)      
+                 $("#order"+id).append(`<button style = "padding-left: 2em;" id = deleteproduct onclick=addreview(${productid})>Add Review</button>`)                
+                 $("#order"+id).append(`<div style = "display: none;" id="review${productid}"></div>`)
+
+
+            }
+
+            function addreview(id){
+                document.getElementById("review"+id).style = "display: block; border:none;"
+                $("#review"+id).append(`<label for="rating">Rating</label> <select name="rating" id="rating${id}"> <option value="1">1</option> <option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></br>`)
+                $("#review"+id).append(`<label for="size">Sizing</label> <select name="size" id="size${id}"> <option value="True to Size">True to Size</option> <option value="Runs Small">Runs Small</option><option value="Runs Large">Runs Large</option><option value="One Size">One Size</option></select></br>`)
+                $("#review"+id).append(`<label for="rec">Recommend</label> <select name="rec" id="rec${id}"> <option value="Yes">Yes</option> <option value="No">No</option><br>`)
+                $("#review"+id).append(`<br><label for="age">Age: </label><input style = "width: 50px; margin-left: 10px;" name="age" id="age${id}">`);
+                $("#review"+id).append(`<br><label for="feet">Height Feet</label><input style = "width: 50px; margin-left: 10px; name="feet" id="feet${id}">`);
+                $("#review"+id).append(`<br><label for="inches">Height Inches</label><input style = "width: 50px; margin-left: 10px; name="inches" id="inches${id}">`);
+            
+                $("#review"+id).append(`<br><button id = "addproduct" onclick=postreview(${id})>Post Review</button>`)                
+
+            }
+
+            function postreview(productid){
+                const params = new URLSearchParams(window.location.search)
+
+                var id = params.get('id')
+
+               var rating = document.getElementById("rating"+productid).value
+               var size = document.getElementById("size"+productid).value
+               var age = document.getElementById("age"+productid).value
+               var feet = document.getElementById("feet"+productid).value
+               var inches = document.getElementById("inches"+productid).value
+               var rec = document.getElementById("rec"+productid).value
+
+
+               $.post('http://localhost:3000/postreview', {productid:productid, accountid:id, rating:rating, sizedesc:size,age:age, recommend:rec, feet:feet, inches:inches});
+
+               console.log(rec)
+                 
+
+            }
+
+            function getproducts(invoiceid){
+                $.post('http://localhost:3000/getinvoiceproducts', {invoiceid:invoiceid},
+                function(res){
+                        console.log("res" + res);
+                        for(let i = 0; i<res.length; i++)
+                        addinvoiceproducts(res[i][0], res[i][1], res[i][2], res[i][3], res[i][4], res[i][5]);
+                        
+                    }
+                );
+            }
+            
+
+        </script>
+
+        <body onload="load()">
+            <div id = "nav-bar">
+                <div id = "left"><h2>Database Systems Final Project</h2></div>
+                <div id = "right" style="float:right;">
+                    <button class = "dropdown" style='font-size:40px'>&#9786;</button>
+                    <div class = "dropdown-content">
+                    </div>
+                </div>
+            </div>
+
+            <div style = "margin-top: 2em; margin-left: 3em;" id = "invoicelist">
+                    
+            </div>
+            </body>
+
+

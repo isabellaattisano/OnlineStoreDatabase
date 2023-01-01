@@ -1,0 +1,5 @@
+Create customer account 
+- little customer icon 
+- drop down menu 
+    - create account
+    - edit account information 

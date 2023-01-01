@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Database Project</title>
+            <link type="text/css" rel="stylesheet" href="styles.css">
+            <!-- <script src="connection.js"></script> -->
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+            <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+            <title>"Database Systems Final Project"</title>
+
+
+        </head>
+
+        <script>
+            function load(){
+                
+                getinvoice();
+
+            }
+
+            function addinvoice(invoiceid, totalprice, name){
+
+
+                $("#productlist").append(`<div id = "product"${invoiceid}><h3>#${invoiceid}: ${name} ($${totalprice})</h3>`)
+
+                }
+
+                function addinvoicedeleted(invoiceid, name){
+
+
+                var id = params.get('id')
+
+                $("#productlist").append(`<div id = "product"${invoiceid}><h3>#${invoiceid}: ${name}</h3>`)
+
+                }
+
+            function getinvoice(){
+
+                $.post('http://localhost:3000/getinvoice',
+                     function(res){
+                        len = res.length;
+                        console.log("res" + res);
+                        for(let i = 0; i<res.length; i++)
+                            addinvoice(res[i][0], res[i][1], res[i][2]); 
+                    }
+
+                    );
+            }
+
+            function getinvoicedeleted(){
+
+                $.post('http://localhost:3000/getinvoicedeleted',
+                     function(res){
+                        console.log("res" + res);
+                        for(let i = 0; i<res.length; i++)
+                            addinvoicedeleted(res[i][0], res[i][1]); 
+                    }
+
+                    );
+            }
+
+                
+
+        </script>
+        
+<body onload="load()">
+    <div id = "nav-bar">
+        <div id = "left"><h2>Database Systems Final Project</h2></div>
+        <div id = "right" style="float:right;">
+            <button class = "dropdown" style='font-size:40px'>&#9786;</button>
+            <div class = "dropdown-content">
+                <a href = "customerinfo.html">Customer Information</a>
+                <a href = "invoicehistory.html">Invoice History</a>
+            </div>
+        </div>
+    </div>
+
+
+
+
+        </div>
+
+
+    <div id = "productlist">
+        
+    </div>
+
+    </body>
+
+

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Database Project</title>
+            <link type="text/css" rel="stylesheet" href="styles.css">
+            <!-- <script src="connection.js"></script> -->
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+            <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+            <title>"Database Systems Final Project"</title>
+
+
+        </head>
+
+        <body onload = load()>
+            <div id = "nav-bar">
+                <div id = "left"><h2>Database Systems Final Project</h2></div>
+                <div id = "right" style="float:right;">
+                    <button class = "dropdown" style='font-size:40px'>&#9786;</button>
+                    <div class = "dropdown-content">
+                        <a href="createaccount.html">Logout</a>
+                        <a id = "account" href=""> Account </a>
+                        <a id = "home" href="">Home</a>
+                    </div>
+                
+                </div>
+            </div>
+
+            <div id = "cart">
+
+                <h2 style = "margin-left: 1em; margin-top: 1em; font-family: 'Arima', cursive; font-weight: bolder;">Shopping Bag</h2>
+
+                <div style = "margin-top: 2em; margin-left: 3em;" id = "productlist">
+                    
+                </div>
+    
+                <button style = "margin-top: 4em; margin-left: 3em;" id = "placeorder" onclick = "placeorder()"> Place Order </button>
+                <div style = "margin-top: 1em;border-bottom: 1px solid black;"></div>
+                
+                <h2 style = "margin-left: 1em; margin-top: 1em; font-family: 'Arima', cursive; font-weight: bolder;">Recently Deleted</h2>
+
+                <div id = "recentlydeleted">
+                    
+                </div>
+
+                <button id = "getdeleted" onclick = "getrecentlydeleted()">Show Recently Deleted</button>
+
+            </div>
+
+
+
+        </body>
+
+        <script>
+            function load(){
+                const params = new URLSearchParams(window.location.search)
+
+                var id = params.get('id')
+                console.log(id);
+
+                document.getElementById("home").href = "index.html"+'?id='+params.get('id').toString();
+                document.getElementById("account").href = "account.html"+'?id='+params.get('id').toString();
+
+                $.post('http://localhost:3000/getcart', {accountid:id},
+                    function(res){
+                        console.log("res" + res[0]);
+                        for(let i = 0; i<res.length; i++)
+                            addproduct(res[i][0], res[i][1], res[i][2], res[i][3], res[i][4]);
+                        
+                    }
+                );
+
+            }
+
+            function placeorder(){
+                const params = new URLSearchParams(window.location.search)
+
+                var id = params.get('id')
+                console.log(id);
+
+                $.post('http://localhost:3000/placeorder', {accountid:id});
+
+            }
+
+            function getrecentlydeleted(){
+
+                const params = new URLSearchParams(window.location.search)
+
+                var id = params.get('id')
+                console.log(id);
+
+                $.post('http://localhost:3000/getrecentlydeleted', {accountid:id},
+                    function(res){
+                        console.log("res" + res[0]);
+                        for(let i = 0; i<res.length; i++)
+                            addrecentlydeleted(res[i][0], res[i][1], res[i][2], res[i][3], res[i][4]);
+                        
+                    }
+                );
+
+                document.getElementById("getdeleted").style = "display: none";
+
+            }
+
+                function addproduct(productid, name, size, quantity, totalprice){
+                    $("#productlist").append(`<div id = "product"><h4>${name}</h4> <h6>Total Price: $${totalprice}</h6>`)                
+                    $("#productlist").append(`<label for="quantity">Quantity</label> <select name="quantity" id="quantity${productid}"><option value="${quantity}" selected disabled hidden>${quantity}</option>
+<option value="1">1</option> <option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></br>`)
+                    
+                   if(size!="onesize")
+                        $("#productlist").append(`<label for="size">Size</label> <select name="sizes" id="size${productid}""><option value="${size}" selected disabled hidden>${size}</option> <option value="X-Small">X-Small</option> <option value="small">Small</option><option value="medium">Medium</option><option value="large">Large</option><option value="x-large">X-Large</option></select></br>`)
+
+                    $("#productlist").append(`<button id = "updatecart" onclick="updatecart(${productid})"">Update Cart</button><br></div>`)
+                    
+                    $("#productlist").append(`<button id = "deleteproduct" onclick="deletefromcart(${productid})"">Delete from Cart</button><br></div>`)
+
+                }
+
+                function addrecentlydeleted(name, size, price){
+                    $("#recentlydeleted").append(`<div id = "product"><h4>${name} (${size})</h4> <h6>Price: $${price}</h6>`)                
+        
+
+                }
+
+                function deletefromcart(productid){
+                    const params = new URLSearchParams(window.location.search)
+                    var id = params.get('id')
+
+                    $.post('http://localhost:3000/deletefromcart', {cartid:id, productid:productid});
+
+
+                }
+
+                function updatecart(productid){
+                    const params = new URLSearchParams(window.location.search)
+                    var id = params.get('id')
+                    var size;
+                    if (document.getElementById("size"+productid) == null)
+                         size = "onesize"
+                    else
+                         size = document.getElementById("size"+productid).value
+
+                    const quantity = document.getElementById("quantity"+productid).value
+
+                    console.log(id, size, quantity)
+
+                    $.post('http://localhost:3000/updatecartitem', {accountid:id, productid:productid, size:size, quantity:quantity });
+
+
+                }
+
+        </script>
+
+

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+        <head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Database Project</title>
+            <link type="text/css" rel="stylesheet" href="styles.css">
+            <!-- <script src="connection.js"></script> -->
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
+            <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
+            <title>"Database Systems Final Project"</title>
+
+
+        </head>
+
+        <body>
+            <div id = "nav-bar">
+                <div id = "left"><h2>Database Systems Final Project</h2></div>
+                <div id = "right" style="float:right;">
+                    <button class = "dropdown" style='font-size:40px'>&#9786;</button>
+                    <div class = "dropdown-content">
+                        <a id = "home" href="index.html">Home</a>
+                    </div>
+                
+                </div>
+            </div>
+
+           
+           
+            <div id = "page">
+                <div id = "createaccount">
+                    <h2>CREATE ACCOUNT</h2>
+
+                            <label for="fname">First name:</label><br>
+                            <input type="text" id="fname" name="fname" ><br><br>
+                            <label for="lname">Last name:</label><br>
+                            <input type="text" id="lname" name="lname" ><br><br>
+                            <label for="email">Email Address:</label><br>
+                            <input type="text" id="email" name="email"><br><br>
+                            <label for="phone">Phone Number (optional):</label><br>
+                            <input type="text" id="phone" name="phone" ><br><br>
+                            <button id = "sub" onclick="createaccount()">Submit</button>
+    
+                    </div>
+                    
+                    <div id = "login">
+                        <h2>LOGIN</h2>
+                                <label for="email">Email Address:</label><br>
+                                <input type="text" id="email2" name="email"><br><br>
+                                <button id = "sub" onclick="login()">Submit</button>
+    
+                </div>
+            
+                </div>
+
+                <div id = "welcomemessage">
+                    <h2 id = "welcome"></h2>
+                    <h1 id = "accountid"></h1>
+
+            </div>
+            </div>
+        </body>
+
+
+</html>
+
+<script>
+    function createaccount(){
+        const fname = document.getElementById("fname");
+        const lname = document.getElementById("lname");
+        const email = document.getElementById("email");
+        const phone = document.getElementById("phone");
+        var accountid;
+
+        console.log(email);
+
+        $.post('http://localhost:3000/createaccount', 
+        { fname: fname.value, lname: lname.value, email: email.value, phone: phone.value },
+        function(res){
+            console.log(res[0]);
+            accountid = res[0][0].toString();
+            console.log(accountid);
+          
+            window.location.href = "account.html"+'?id='+accountid;
+
+        }
+        );
+
+    }
+
+    function login(){
+        const email = document.getElementById("email2");
+        $.post('http://localhost:3000/login', 
+        {email: email.value},
+        function(res){
+            var accountid = res[0][0].toString();
+            var lname = res[0][1].toString();
+            var fname = res[0][2].toString();
+
+            window.location.href = "account.html" + '?id='+accountid;
+
+
+        }
+        );
+      
+    }
+
+</script>
+
+
+    
+        
+       
